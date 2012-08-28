@@ -42,7 +42,11 @@ module Kafka
 
     def wrap_socket_with_ssl(socket, ssl_config)
       ssl_config = {} unless Hash === ssl_config
-      OpenSSL::SSL::SSLSocket.new(socket, ssl_config[:context])
+      if ctx = ssl_config[:context]
+        OpenSSL::SSL::SSLSocket.new(socket, ctx)
+      else
+        OpenSSL::SSL::SSLSocket.new(socket)
+      end
     end
 
     def disconnect
