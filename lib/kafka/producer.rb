@@ -26,7 +26,7 @@ module Kafka
       self.partition = options[:partition]  || 0
       self.host      = options[:host]       || "localhost"
       self.port      = options[:port]       || 9092
-      self.connect(self.host, self.port)
+      self.connect(self.host, self.port, options[:ssl])
     end
 
     def encode(message)

@@ -14,46 +14,35 @@
 # limitations under the License.
 module Kafka
   module IO
-    def self.use_ssl=(flag)
-      @use_ssl = flag 
+    attr_accessor :socket, :host, :port, :ssl_config
 
-      if use_ssl?
-        require 'openssl'
-      end
-
-      @use_ssl
-    end
-    def self.use_ssl?; @use_ssl end
-    def self.ssl_context=(ctx); @ssl_context = ctx end
-    def self.ssl_context; @ssl_context end
-
-    attr_accessor :socket, :host, :port
-
-    def connect(host, port)
+    def connect(host, port, ssl_config=nil)
       raise ArgumentError, "No host or port specified" unless host && port
       self.host = host
       self.port = port
-      self.socket = create_socket(host, port)
+      self.ssl_config = ssl_config
+      self.socket = create_socket(host, port, ssl_config)
     end
 
     def reconnect
-      self.socket = create_socket(self.host, self.port)
+      self.socket = create_socket(self.host, self.port, self.ssl_config)
     rescue
       self.disconnect
       raise
     end
 
-    def create_socket(host, port)
+    def create_socket(host, port, ssl_config)
       socket = TCPSocket.new(host, port)
-      if Kafka::IO.use_ssl?
-        wrap_socket_with_ssl(socket)
+      if ssl_config
+        wrap_socket_with_ssl(socket, ssl_config)
       else
         socket
       end
     end
 
-    def wrap_socket_with_ssl(socket)
-      OpenSSL::SSL::SSLSocket.new(socket, Kafka::IO.ssl_context)
+    def wrap_socket_with_ssl(socket, ssl_config)
+      ssl_config = {} unless Hash === ssl_config
+      OpenSSL::SSL::SSLSocket.new(socket, ssl_config[:context])
     end
 
     def disconnect

@@ -34,7 +34,7 @@ module Kafka
       self.offset       = options[:offset]
       self.max_size     = options[:max_size]  || MAX_SIZE
       self.polling      = options[:polling]   || DEFAULT_POLLING_INTERVAL
-      connect(host, port)
+      connect(host, port, options[:ssl])
     end
 
     def loop(&block)
